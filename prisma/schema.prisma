@@ -1,0 +1,173 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          Int           @id @default(autoincrement())
+  username    String        @unique
+  email       String        @unique
+  password    String
+  hash        String
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  userRoles   UserRole[]
+  userOrders  UserOrder[]
+  userProduct UserProduct[]
+  UserPoint   UserPoint[]
+
+  @@map("users")
+}
+
+model Role {
+  id        Int        @id @unique
+  name      String     @unique
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  userRoles UserRole[]
+}
+
+model UserRole {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  role      Role     @relation(fields: [roleId], references: [id])
+  roleId    Int
+}
+
+model Product {
+  id          Int           @id @default(autoincrement())
+  name        String
+  mass        Int?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  userProduct UserProduct[]
+  OrderItem   OrderItem[]
+}
+
+model UserProduct {
+  id        Int     @id @default(autoincrement())
+  user      User    @relation(fields: [userId], references: [id])
+  userId    Int
+  product   Product @relation(fields: [productId], references: [id])
+  productId Int
+
+  @@unique([userId, productId])
+}
+
+model Order {
+  id         String      @id @unique
+  userId     Int
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  userOrders UserOrder[]
+  orderItems OrderItem[]
+  inforOrder InforOder[]
+  OrderRoad  OrderRoad[]
+}
+
+model OrderItem {
+  id          Int     @id @default(autoincrement())
+  orderId     String
+  productId   Int
+  quantity    Int
+  mass        Int
+  description String
+  order       Order   @relation(fields: [orderId], references: [id])
+  product     Product @relation(fields: [productId], references: [id])
+}
+
+model UserOrder {
+  user    User   @relation(fields: [userId], references: [id])
+  userId  Int
+  order   Order  @relation(fields: [orderId], references: [id])
+  orderId String
+
+  @@id([userId, orderId])
+}
+
+model InforOder {
+  id                  Int    @unique
+  orderId             String
+  description         String
+  order               Order  @relation(fields: [orderId], references: [id])
+  senderName          String
+  senderNumber        String
+  senderAddress       String
+  senderPostCode      String
+  receiverName        String
+  receiverNumber      String
+  receiverAddress     String
+  receiverPostCode    String
+  mass                String
+  typeGoods           String
+  baseFee             Int
+  additionalFee       Int
+  VAT                 Int
+  cost                Int
+  Othercharge         Int
+  reveiverCOD         Int
+  reveicerOthercharge Int
+}
+
+model TransactionPoint {
+  id                  String      @unique
+  name                String
+  province            String
+  cityDistrict        String
+  address             String
+  numberPhone         String
+  status              String
+  quantityTransaction Int
+  UserPoint           UserPoint[]
+}
+
+model HubPoint {
+  id           String      @unique
+  name         String
+  province     String
+  cityDistrict String
+  address      String
+  numberPhone  String
+  status       String
+  quantityHub  Int
+  UserPoint    UserPoint[]
+}
+
+model UserPoint {
+  id               Int              @id @default(autoincrement())
+  user             User             @relation(fields: [userId], references: [id])
+  userId           Int
+  type             Int
+  transactionPoint TransactionPoint @relation(fields: [transId], references: [id])
+  transId          String
+  hubPoint         HubPoint         @relation(fields: [hubId], references: [id])
+  hubId            String
+}
+
+model Road {
+  id                  Int         @id @default(autoincrement())
+  orderId             String
+  roadPlan            String
+  roadRealTime        String
+  locationPointId     String
+  nextLocationPointId String
+  status              String
+  OrderRoad           OrderRoad[]
+}
+
+model OrderRoad {
+  id      Int    @id @default(autoincrement())
+  order   Order  @relation(fields: [orderId], references: [id])
+  orderId String
+  road    Road   @relation(fields: [roadId], references: [id])
+  roadId  Int
+}
