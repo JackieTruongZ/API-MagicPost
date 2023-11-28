@@ -10,4 +10,3 @@ npx prisma migrate deploy // deploy data module on database
 yarn db:dev:restart // start postgres in docker and push migrations
 yarn start:dev // start api in dev mode
 ```
-# API-MagicPost
