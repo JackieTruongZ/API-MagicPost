@@ -3,13 +3,13 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { AuthDto, AuthSigninDto, AuthSignupDto } from "./dto";
+import { AuthDto, AuthSigninDto, AuthSignupDto, AuthResponseDto } from "./dto";
 import * as argon from 'argon2';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { User } from "@prisma/client";
-import { AuthResponseDto } from './dto/auth.response.dto';
+import { ResponseDto } from 'src/Response.dto';
 
 @Injectable()
 export class AuthService {
@@ -34,9 +34,8 @@ export class AuthService {
         },
       });
 
-      authResponseDto.setStatusOK();
-      authResponseDto.setData(this.signToken(user.id, user.email));
-      return authResponseDto;
+      return this.signToken(user.id, user.email);
+
     } catch (error) {
       if (
         error instanceof
@@ -86,15 +85,14 @@ export class AuthService {
       authResponseDto.setData(null);
       return authResponseDto;
     }
-    authResponseDto.setStatusOK();
-    authResponseDto.setData(this.signToken(user.id, user.email));
-    return authResponseDto;
+    return this.signToken(user.id, user.email);
+
   }
 
   async signToken(
     userId: number,
     email: string,
-  ): Promise<{ access_token: string }> {
+  ): Promise<AuthResponseDto> {
     const payload = {
       sub: userId,
       email,
@@ -109,8 +107,9 @@ export class AuthService {
       },
     );
 
-    return {
-      access_token: token,
-    };
+    const authResponseDto : AuthResponseDto = new AuthResponseDto();
+authResponseDto.setStatusOK();
+authResponseDto.setAccessToken(token);
+    return authResponseDto;
   }
 }
