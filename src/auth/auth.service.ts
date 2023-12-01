@@ -9,6 +9,7 @@ import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { User } from "@prisma/client";
+import { AuthResponseDto } from './dto/auth.response.dto';
 
 @Injectable()
 export class AuthService {
@@ -21,6 +22,7 @@ export class AuthService {
   async signup(dto: AuthSignupDto) {
     // generate the password hash
     const hash = await argon.hash(dto.password);
+    const authResponseDto = new AuthResponseDto();
     // save the new user in the db
     try {
       const user: User = await this.prisma.user.create({
@@ -32,24 +34,32 @@ export class AuthService {
         },
       });
 
-      return this.signToken(user.id, user.email);
+      authResponseDto.setStatusOK();
+      authResponseDto.setData(this.signToken(user.id, user.email));
+      return authResponseDto;
     } catch (error) {
       if (
         error instanceof
         PrismaClientKnownRequestError
       ) {
         if (error.code === 'P2002') {
-          throw new ForbiddenException(
-            'Credentials taken',
-          );
+          authResponseDto.setStatusFail();
+          authResponseDto.setMessage("Credentials taken");
+          authResponseDto.setData(null);
+          return authResponseDto;
         }
       }
-      throw error;
+      authResponseDto.setStatusFail();
+      authResponseDto.setMessage(error);
+      authResponseDto.setData(null);
+      return authResponseDto;
     }
   }
 
   async signin(dto: AuthSigninDto) {
     // find the user by email
+
+    const authResponseDto = new AuthResponseDto();
     const user =
       await this.prisma.user.findUnique({
         where: {
@@ -57,10 +67,12 @@ export class AuthService {
         },
       });
     // if user does not exist throw exception
-    if (!user)
-      throw new ForbiddenException(
-        'Credentials incorrect',
-      );
+    if (!user){
+      authResponseDto.setStatusFail();
+    authResponseDto.setMessage('Credentials incorrect');
+    authResponseDto.setData(null);
+    return authResponseDto;
+    }
 
     // compare password
     const pwMatches = await argon.verify(
@@ -68,11 +80,15 @@ export class AuthService {
       dto.password,
     );
     // if password incorrect throw exception
-    if (!pwMatches)
-      throw new ForbiddenException(
-        'Credentials incorrect',
-      );
-    return this.signToken(user.id, user.email);
+    if (!pwMatches){
+      authResponseDto.setStatusFail();
+      authResponseDto.setMessage('Credentials incorrect');
+      authResponseDto.setData(null);
+      return authResponseDto;
+    }
+    authResponseDto.setStatusOK();
+    authResponseDto.setData(this.signToken(user.id, user.email));
+    return authResponseDto;
   }
 
   async signToken(
@@ -88,7 +104,7 @@ export class AuthService {
     const token = await this.jwt.signAsync(
       payload,
       {
-        expiresIn: '15m',
+        expiresIn: '60m',
         secret: secret,
       },
     );
