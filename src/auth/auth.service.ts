@@ -3,13 +3,19 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { AuthDto, AuthSigninDto, AuthSignupDto, AuthResponseDto } from "./dto";
+import {
+  AuthDto,
+  AuthSigninDto,
+  AuthSignupDto,
+  AuthResponseDto,
+} from './dto';
 import * as argon from 'argon2';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { User } from "@prisma/client";
+import { User } from '@prisma/client';
 import { ResponseDto } from 'src/Response.dto';
+import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class AuthService {
@@ -25,17 +31,17 @@ export class AuthService {
     const authResponseDto = new AuthResponseDto();
     // save the new user in the db
     try {
-      const user: User = await this.prisma.user.create({
-        data: {
-          email: dto.email,
-          hash,
-          username:dto.username,
-          password:dto.password
-        },
-      });
+      const user: User =
+        await this.prisma.user.create({
+          data: {
+            email: dto.email,
+            hash,
+            username: dto.username,
+            password: dto.password,
+          },
+        });
 
       return this.signToken(user.id, user.email);
-
     } catch (error) {
       if (
         error instanceof
@@ -43,7 +49,9 @@ export class AuthService {
       ) {
         if (error.code === 'P2002') {
           authResponseDto.setStatusFail();
-          authResponseDto.setMessage("Credentials taken");
+          authResponseDto.setMessage(
+            'Credentials taken',
+          );
           authResponseDto.setData(null);
           return authResponseDto;
         }
@@ -66,11 +74,13 @@ export class AuthService {
         },
       });
     // if user does not exist throw exception
-    if (!user){
+    if (!user) {
       authResponseDto.setStatusFail();
-    authResponseDto.setMessage('Credentials incorrect');
-    authResponseDto.setData(null);
-    return authResponseDto;
+      authResponseDto.setMessage(
+        'Credentials incorrect',
+      );
+      authResponseDto.setData(null);
+      return authResponseDto;
     }
 
     // compare password
@@ -79,14 +89,15 @@ export class AuthService {
       dto.password,
     );
     // if password incorrect throw exception
-    if (!pwMatches){
+    if (!pwMatches) {
       authResponseDto.setStatusFail();
-      authResponseDto.setMessage('Credentials incorrect');
+      authResponseDto.setMessage(
+        'Credentials incorrect',
+      );
       authResponseDto.setData(null);
       return authResponseDto;
     }
     return this.signToken(user.id, user.email);
-
   }
 
   async signToken(
@@ -107,9 +118,10 @@ export class AuthService {
       },
     );
 
-    const authResponseDto : AuthResponseDto = new AuthResponseDto();
-authResponseDto.setStatusOK();
-authResponseDto.setAccessToken(token);
+    const authResponseDto: AuthResponseDto =
+      new AuthResponseDto();
+    authResponseDto.setStatusOK();
+    authResponseDto.setAccessToken(token);
     return authResponseDto;
   }
 }
