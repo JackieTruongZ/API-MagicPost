@@ -5,7 +5,7 @@ import {
   TransResponseDto,
   TransStatusDto,
 } from './dto';
-import { generateNameOfTransHub } from '../Utils';
+import { findProvinceById, generateNameOfTransHub } from '../Utils';
 import { TransactionPoint } from '@prisma/client';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
 import { ResponseDto } from '../Response.dto';
@@ -575,6 +575,83 @@ export class TransService {
     //------END function --------------------//
   }
 
+  async findTransByProvinceId(
+    userId: number,
+    proviceId: string,
+  ) {
+    let transResponseDto = new TransResponseDto();
+
+    //------- main method delete Trans-----------///
+    try {
+      //--- check role-----------------------//
+
+      const userRoleId: number | ResponseDto =
+        await this.userService.checkUserRoleId(
+          userId,
+        );
+
+      if (typeof userRoleId !== 'number') {
+        transResponseDto =
+          userRoleId as TransResponseDto;
+        return transResponseDto;
+      }
+
+      if (userRoleId == 5) {
+        return findTransByProvinceId(this.prisma);
+      } else {
+        transResponseDto.setStatusFail();
+        transResponseDto.setMessage(
+          'You are not authorized!',
+        );
+        transResponseDto.setData(null);
+        return transResponseDto;
+      }
+    } catch (err) {
+      console.log(
+        `find trans by id : ${proviceId} get ERROR : `,
+        err,
+      );
+      transResponseDto.setStatusFail();
+      transResponseDto.setMessage(
+        `find trans by id : ${proviceId} get ERROR : ` +
+          err,
+      );
+      transResponseDto.setData(null);
+      return transResponseDto;
+    }
+    //-------- END check role ---------------------------------------------//
+
+    //---------- Function for find trans ---------------------//
+    async function findTransByProvinceId(
+      prisma: PrismaService,
+    ) {
+      try {
+        const provice: string = findProvinceById(proviceId);
+        const trans =
+          await prisma.transactionPoint.findMany(
+            {
+              where: {
+              province: provice,
+              },
+            },
+          );
+        transResponseDto.setStatusOK();
+        transResponseDto.setData(trans);
+        return transResponseDto;
+      } catch (error) {
+        transResponseDto.setStatusFail();
+        transResponseDto.setMessage(
+          `find trans by id : ${proviceId} get ERROR : ` +
+            error,
+        );
+        transResponseDto.setData(null);
+        return transResponseDto;
+      }
+    }
+    //------END function --------------------//
+  }
+
+  
   // ------ for service other api -----------//
 
   async checkTransForUser(

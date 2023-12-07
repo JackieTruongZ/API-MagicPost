@@ -77,7 +77,7 @@ export class AuthService {
     if (!user) {
       authResponseDto.setStatusFail();
       authResponseDto.setMessage(
-        'Credentials incorrect',
+        'Sorry wrong email !',
       );
       authResponseDto.setData(null);
       return authResponseDto;
@@ -92,7 +92,7 @@ export class AuthService {
     if (!pwMatches) {
       authResponseDto.setStatusFail();
       authResponseDto.setMessage(
-        'Credentials incorrect',
+        'Sorry wrong password !',
       );
       authResponseDto.setData(null);
       return authResponseDto;
