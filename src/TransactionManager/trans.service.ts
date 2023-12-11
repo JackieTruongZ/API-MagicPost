@@ -5,7 +5,10 @@ import {
   TransResponseDto,
   TransStatusDto,
 } from './dto';
-import { findProvinceById, generateNameOfTransHub } from '../Utils';
+import {
+  findProvinceById,
+  generateNameOfTransHub,
+} from '../Utils';
 import { TransactionPoint } from '@prisma/client';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
 import { ResponseDto } from '../Response.dto';
@@ -626,16 +629,20 @@ export class TransService {
       prisma: PrismaService,
     ) {
       try {
-        const provice: string = findProvinceById(proviceId);
         const trans =
-          await prisma.transactionPoint.findMany(
-            {
-              where: {
-              province: provice,
-              },
+          await prisma.transactionPoint.findMany({
+            where: {
+              province: proviceId,
             },
-          );
+          });
         transResponseDto.setStatusOK();
+        if (!trans[0]) {
+          transResponseDto.setStatusFail();
+          transResponseDto.setMessage(
+            'No trans in here !',
+          );
+        }
+
         transResponseDto.setData(trans);
         return transResponseDto;
       } catch (error) {
@@ -651,7 +658,6 @@ export class TransService {
     //------END function --------------------//
   }
 
-  
   // ------ for service other api -----------//
 
   async checkTransForUser(

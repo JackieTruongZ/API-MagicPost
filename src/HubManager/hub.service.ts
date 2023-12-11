@@ -2,7 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UserService } from '../user/user.service';
 import { ResponseDto } from '../Response.dto';
-import { findProvinceById, generateNameOfTransHub } from '../Utils';
+import {
+  findProvinceById,
+  generateNameOfTransHub,
+} from '../Utils';
 import { HubPoint } from '@prisma/client';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
 import { HubDto } from './dto/hub.dto';
@@ -595,17 +598,20 @@ export class HubService {
       prisma: PrismaService,
     ) {
       try {
-        const provice: string = findProvinceById(proviceId);
-        const trans =
-          await prisma.transactionPoint.findMany(
-            {
-              where: {
-              province: provice,
-              },
+        const hub =
+          await prisma.hubPoint.findMany({
+            where: {
+              province: proviceId,
             },
-          );
+          });
         hubResponseDto.setStatusOK();
-        hubResponseDto.setData(trans);
+        if (!hub[0]) {
+          hubResponseDto.setStatusFail();
+          hubResponseDto.setMessage(
+            'No trans in here !',
+          );
+        }
+        hubResponseDto.setData(hub);
         return hubResponseDto;
       } catch (error) {
         hubResponseDto.setStatusFail();
@@ -621,25 +627,27 @@ export class HubService {
   }
 
   // -----------function for other API ------- //
-  async checkHubForUser(userId: number, hubId: string) {
-
-
+  async checkHubForUser(
+    userId: number,
+    hubId: string,
+  ) {
     try {
-      const check = await this.prisma.userPoint.findMany({
-        where : {
-          userId: userId,
-          hubId: hubId
-        }
-      })
+      const check =
+        await this.prisma.userPoint.findMany({
+          where: {
+            userId: userId,
+            hubId: hubId,
+          },
+        });
       if (!check[0]) {
         return false;
       }
       return true;
-    }
-    catch(err) {
-      console.log("check hub for user get error : " + err);
+    } catch (err) {
+      console.log(
+        'check hub for user get error : ' + err,
+      );
       return false;
     }
-
   }
 }
