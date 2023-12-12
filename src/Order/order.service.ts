@@ -2,7 +2,7 @@ import {
   OrderDto,
   OrderResponseDto,
 } from './dto';
-import { Road, User } from '@prisma/client';
+import { InforOder, Road, User } from '@prisma/client';
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { ProductDto } from '../product/dto';
@@ -1113,8 +1113,21 @@ export class OrderService {
           );
           return orderResponseDto;
         }
+
+        const inforOder: InforOder =
+          await prisma.inforOder.findFirst({
+            where: {
+              orderId: orderId,
+            },
+          });
+        const road: Road = await prisma.road.findFirst({
+          where: {
+            orderId: orderId,
+          },
+        });
+
         orderResponseDto.setStatusOK();
-        orderResponseDto.setData(order);
+        orderResponseDto.setInforOrder(order, inforOder, road);
         return orderResponseDto;
       } catch (err) {
         orderResponseDto.setStatusFail();
