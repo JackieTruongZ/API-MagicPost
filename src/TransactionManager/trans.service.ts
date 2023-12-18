@@ -8,10 +8,10 @@ import {
 import {
   findProvinceById,
   generateNameOfTransHub,
-} from '../Utils';
+} from '../../../../MagicPost/backend/src/Utils';
 import { TransactionPoint } from '@prisma/client';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
-import { ResponseDto } from '../Response.dto';
+import { ResponseDto } from '../../../../MagicPost/backend/src/Response.dto';
 import { UserService } from '../user/user.service';
 import { TransInformationDto } from './dto/trans.information.dto';
 import { log } from 'console';
