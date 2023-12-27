@@ -16,11 +16,11 @@ import {
   UserPoint,
   UserRole,
 } from '@prisma/client';
-import { ResponseDto } from '../../../../MagicPost/backend/src/Response.dto';
+import { ResponseDto } from 'src/Response.dto';
 import { AddAuthDto } from './dto/add-auth.dto';
 import { UserResponseDto } from './dto/user.response.dto';
 import { AddAuthInforDto } from './dto/add-auth-infor.dto';
-import { generalPassword } from '../../../../MagicPost/backend/src/password';
+import { generalPassword } from 'src/password';
 import { log } from 'console';
 import { UserinforResponseDto } from './dto/userinfor.response.dto';
 import { first } from 'rxjs';

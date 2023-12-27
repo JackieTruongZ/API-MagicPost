@@ -15,10 +15,10 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { ProductDto } from '../product/dto';
 import { ProductService } from '../product/product.service';
-import { ResponseDto } from '../../../../MagicPost/backend/src/Response.dto';
 import { UserService } from '../user/user.service';
 import { TransService } from 'src/TransactionManager/trans.service';
 import { HubService } from 'src/HubManager/hub.service';
+import { ResponseDto } from 'src/Response.dto';
 
 @Injectable()
 export class OrderService {

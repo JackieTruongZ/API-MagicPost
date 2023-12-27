@@ -1,4 +1,4 @@
-import { ResponseDto } from "../../../../../MagicPost/backend/src/Response.dto";
+import { ResponseDto } from "src/Response.dto";
 
 export class TransResponseDto extends ResponseDto{
 
